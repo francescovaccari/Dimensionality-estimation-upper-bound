@@ -3,7 +3,38 @@ import pandas as pd
 import sqlite3
 from sqlite3 import Connection
 import plotly.graph_objects as go
-import numpy as np # -----> for dummy variance decay
+
+#### Set Up
+
+# Specify csv column names for filtering data
+generative_process_colname = 'Generative_process'
+noise_distribution_colname = 'Noise_distribution'
+normalization_method_colname = 'Final_normalization'
+ts_length_colname = 'Time_Series_Length'
+synth_neurons_colname = 'Syntethic_Neurons'
+variance_decay_colname = 'Tau'
+
+# Specify csv column names to exhibit as results (mean and std)
+first_result_colname = 'Identifiable_dimensions'
+second_result_colname = 'Noise'
+
+# Page layout
+st.set_page_config(
+    page_title="Check Our Data",
+    page_icon=":brain:",  # :eyeglasses:
+    layout="wide",
+    )
+
+# Title and small description
+st.title("Explore simulated data from [paper title]")
+
+st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
+         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
+         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi \
+         ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit \
+          in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
+          Excepteur sint occaecat cupidatat non proident, sunt in culpa \
+          qui officia deserunt mollit anim id est laborum.")
 
 
 #### Data Loading
@@ -21,65 +52,48 @@ dataset = 'data/simulations.xlsx'
 conn = load_data_to_sqlite(dataset)
 
 
-#### Input selection
+#### Input selection for data filtering
+
+st.subheader("Filter the data" ,divider=True)
 
 # Function to get unique values from a column
 def get_unique_values(column: str) -> list:
     query = f"SELECT DISTINCT {column} FROM simulations_data"
     return [row[0] for row in conn.execute(query).fetchall()]
 
-st.title("Explore simulated data from [paper title]")
+## Dropdowns
 
-st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
-         sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
-         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi \
-         ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit \
-          in voluptate velit esse cillum dolore eu fugiat nulla pariatur. \
-          Excepteur sint occaecat cupidatat non proident, sunt in culpa \
-          qui officia deserunt mollit anim id est laborum.")
-
-st.subheader("Filter the pool of simulations" ,divider=True)
-
-# Dropdown for Generative Process
-generative_process_colname = 'generator'
+# Generative Process
 generative_process = get_unique_values(generative_process_colname)
 selected_process = st.selectbox('Generative process:', generative_process)
 
-# Dropdown for Noise Distribution
-noise_distribution_colname = 'equal_noise'
+# Noise Distribution
 noise_distribution = get_unique_values(noise_distribution_colname)
 selected_distribution = st.selectbox('Noise distribution:', noise_distribution)
 
-# Dropdown for Final Normalization Method
-normalization_method_colname = 'soft_norm'
+# Final Normalization Method
 normalization_method = get_unique_values(normalization_method_colname)
-selected_normalization = st.selectbox('Noise distribution:', normalization_method)
+selected_normalization = st.selectbox('Normalization method:', normalization_method)
 
-# Slider for selecting a range of synthetic neurons
-synth_neurons_colname = 'fake_units'
+## Sliders 
+
+# Synthetic neurons
 synth_neurons = get_unique_values(synth_neurons_colname)
-selected_units = st.slider('Number of synthetic neurons:', 
-                           min_value=min(synth_neurons), 
-                           max_value=max(synth_neurons), 
-                           value=(min(synth_neurons), max(synth_neurons)))
+selected_units_min, selected_units_max = st.select_slider('Number of synthetic neurons:', 
+                           options = synth_neurons, 
+                           value=(synth_neurons[0], synth_neurons[-1]))
 
-# Slider for selecting a range of timeseries length
-ts_length_colname = 'length'
+# Timeseries length
 ts_length = get_unique_values(ts_length_colname)
-selected_length = st.slider('Timeseries length:', 
-                            min_value=min(ts_length), 
-                            max_value=max(ts_length), 
-                            value=(min(ts_length), max(ts_length)))
+selected_length_min, selected_length_max = st.select_slider('Timeseries length:', 
+                            options = ts_length, 
+                            value=(ts_length[0], ts_length[-1]))
 
-# Slider for selecting a range of latent variance decay
-# variance_decay_colname = ''
-# variance_decay = get_unique_values(variance_decay_colname)
-dummy_decay_data = np.linspace(0,1.5,16)
-variance_decay = dummy_decay_data
-selected_decay = st.slider('Latent variance decay (\u03C4):', 
-                            min_value=min(variance_decay), 
-                            max_value=max(variance_decay), 
-                            value=(min(variance_decay), max(variance_decay)))
+# Latent variance decay: Tau
+variance_decay = get_unique_values(variance_decay_colname)
+selected_decay_min, selected_decay_max = st.select_slider('Latent variance decay (\u03C4):', 
+                            options = variance_decay, 
+                            value=(variance_decay[0], variance_decay[-1]))
 
 
 #### Data filtering
@@ -92,17 +106,14 @@ AND {noise_distribution_colname} = ?
 AND {normalization_method_colname} = ? 
 AND {synth_neurons_colname} BETWEEN ? AND ? 
 AND {ts_length_colname} BETWEEN ? AND ?
+AND {variance_decay_colname} BETWEEN ? AND ?
 """
-# AND {variance_decay_colname} BETWEEN ? AND ? -------------> add once final data available
-# """
 
 # Execute the query with the parameters
-selected_units_min, selected_units_max = selected_units
-selected_length_min, selected_length_max = selected_length
 query_params = (selected_process, selected_distribution, selected_normalization, 
           selected_units_min, selected_units_max, 
-          selected_length_min, selected_length_max 
-          # selected_decay[0], selected_decay[1] -------------> add once final data available
+          selected_length_min, selected_length_max,
+          selected_decay_min, selected_decay_max
           )
 
 # Filter the dataframe and display
@@ -114,40 +125,29 @@ st.write(filtered_data)
 
 if not filtered_data.empty:
 
-    ## Report mean and std
+    ### Report results' mean and std 
 
     st.subheader('Identified dimensions and noise error', divider=True)
 
-    # Selected parameters
+    # Sum up selected parameters
     st.subheader("Simulation Parameters")
     st.table({
         "Parameter": ["Number of synthetic neurons", "Length of the simulation", "Value of latent variance decay"],
-        "Value": [selected_units, selected_length, selected_decay]
+        "Value": [(selected_units_min, selected_units_max), (selected_length_min, selected_length_max), (selected_decay_min, selected_decay_max)]
     })
 
-    # Number of dimensions and noise error
-    number_dimensions_colname = 'num_dim'
-    noise_error_colname = 'noise.1'
-
+    # Report first and second results
     st.subheader("Statistics")
     st.table({
-        "Metric": ["Identifiable dimensions mean", "Identifiable dimensions st.dev", "Noise error mean", "Noise error st.dev"],
+        "Metric": [f"{first_result_colname.replace('_',' ')} mean", f"{first_result_colname.replace('_',' ')} st.dev", 
+                   f"{second_result_colname.replace('_',' ')} mean", f"{second_result_colname.replace('_',' ')} st.dev"],
         "Value": [
-            f"{filtered_data[number_dimensions_colname].mean():.2f}",
-            f"{filtered_data[number_dimensions_colname].std():.2f}",
-            f"{filtered_data[noise_error_colname].mean():.2f}",
-            f"{filtered_data[noise_error_colname].std():.2f}"
+            f"{filtered_data[first_result_colname].mean():.2f}",
+            f"{filtered_data[first_result_colname].std():.2f}",
+            f"{filtered_data[second_result_colname].mean():.2f}",
+            f"{filtered_data[second_result_colname].std():.2f}"
         ]
     })
-
-
-    # variance_decay_colname = '' -------------> add once final data available
-    # st.write(
-    #     f'Identifiable dimensions: \
-    #         mean {filtered_data[variance_decay_colname].mean()}, \
-    #         st.dev {filtered_data[variance_decay_colname].std}'
-    # )
-
 
     ## Plot desired variables
     
