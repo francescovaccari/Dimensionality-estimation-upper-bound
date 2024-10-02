@@ -3,10 +3,11 @@ import pandas as pd
 import sqlite3
 from sqlite3 import Connection
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 #### Set Up
 
-# Specify csv column names for filtering data
+# Specify csv column names representing parameters to filter data --------------> substitute with (first,second, etc)_data_filter_colname
 generative_process_colname = 'Generative_process'
 noise_distribution_colname = 'Noise_distribution'
 normalization_method_colname = 'Final_normalization'
@@ -14,9 +15,19 @@ ts_length_colname = 'Time_Series_Length'
 synth_neurons_colname = 'Syntethic_Neurons'
 variance_decay_colname = 'Tau'
 
-# Specify csv column names to exhibit as results (mean and std)
-first_result_colname = 'Identifiable_dimensions'
-second_result_colname = 'Noise'
+# Specify condition/method-specific prefixes (if any) 
+# for csv column names representing variables to exhibit as results
+conditions_prefix_colname = ['PA', 'CV', 'K1', 'PR', '80%', '90%']
+
+# Specify csv column names representing variables to exhibit as results (mean and std)
+first_result_colname = 'Identifiable_Dimensions'
+second_result_colname = 'Real_data_in_denoised_matrix'
+third_result_colname = 'Estimated_noise_err'
+
+# Specify csv column names to plot
+y_variable_plot_colnames = [first_result_colname, second_result_colname, third_result_colname]
+x_variable_plot_colname = variance_decay_colname
+colorcode_variable_plot_colname = 'Noise'
 
 # Page layout
 st.set_page_config(
@@ -44,11 +55,11 @@ st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
 def load_data_to_sqlite(csv_file: str) -> Connection:
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     df = pd.read_excel(csv_file)
-    df.to_sql('simulations_data', conn, if_exists='replace', index=False)
+    df.to_sql('data', conn, if_exists='replace', index=False)
     return conn
 
 # Load data into SQLite
-dataset = 'data/simulations.xlsx'
+dataset = 'data/Final_table.xlsx'
 conn = load_data_to_sqlite(dataset)
 
 
@@ -58,7 +69,7 @@ st.subheader("Filter the data" ,divider=True)
 
 # Function to get unique values from a column
 def get_unique_values(column: str) -> list:
-    query = f"SELECT DISTINCT {column} FROM simulations_data"
+    query = f"SELECT DISTINCT {column} FROM data"
     return [row[0] for row in conn.execute(query).fetchall()]
 
 ## Dropdowns
@@ -100,7 +111,7 @@ selected_decay_min, selected_decay_max = st.select_slider('Latent variance decay
 
 # Query data based on selection
 query = f"""
-SELECT * FROM simulations_data 
+SELECT * FROM data 
 WHERE {generative_process_colname} = ?
 AND {noise_distribution_colname} = ? 
 AND {normalization_method_colname} = ? 
@@ -125,91 +136,83 @@ st.write(filtered_data)
 
 if not filtered_data.empty:
 
-    ### Report results' mean and std 
+    # Choose methods ---------------------------------> find more general term
+    selected_condition = st.selectbox('Choose a method/condition:', conditions_prefix_colname)
 
-    st.subheader('Identified dimensions and noise error', divider=True)
+    ### Report results' mean and std 
+    st.subheader(f'{first_result_colname.replace('_',' ')}, {second_result_colname.replace('_',' ')} and {third_result_colname.replace('_',' ')}', divider=True)
 
     # Sum up selected parameters
     st.subheader("Simulation Parameters")
     st.table({
-        "Parameter": ["Number of synthetic neurons", "Length of the simulation", "Value of latent variance decay"],
-        "Value": [(selected_units_min, selected_units_max), (selected_length_min, selected_length_max), (selected_decay_min, selected_decay_max)]
+        "Parameter": [f"{generative_process_colname.replace('_',' ')}",
+                    f"{noise_distribution_colname.replace('_',' ')}",
+                    f"{normalization_method_colname.replace('_',' ')}",
+                    f"{ts_length_colname.replace('_',' ')}",
+                    f"{synth_neurons_colname.replace('_',' ')}",
+                    f"{variance_decay_colname.replace('_',' ')}",
+                    ],
+        "Value": [(selected_process),
+                  (selected_distribution),
+                  (selected_normalization),
+                  (selected_length_min, selected_length_max), 
+                  (selected_units_min, selected_units_max), 
+                  (selected_decay_min, selected_decay_max),
+                  ]
     })
 
-    # Report first and second results
+    # Report results
     st.subheader("Statistics")
     st.table({
         "Metric": [f"{first_result_colname.replace('_',' ')} mean", f"{first_result_colname.replace('_',' ')} st.dev", 
-                   f"{second_result_colname.replace('_',' ')} mean", f"{second_result_colname.replace('_',' ')} st.dev"],
+                   f"{second_result_colname.replace('_',' ')} mean", f"{second_result_colname.replace('_',' ')} st.dev",
+                   f"{third_result_colname.replace('_',' ')} mean", f"{third_result_colname.replace('_',' ')} st.dev"],
         "Value": [
-            f"{filtered_data[first_result_colname].mean():.2f}",
-            f"{filtered_data[first_result_colname].std():.2f}",
-            f"{filtered_data[second_result_colname].mean():.2f}",
-            f"{filtered_data[second_result_colname].std():.2f}"
+            f"{filtered_data[selected_condition+'_'+first_result_colname].mean():.2f}",
+            f"{filtered_data[selected_condition+'_'+first_result_colname].std():.2f}",
+            f"{filtered_data[selected_condition+'_'+second_result_colname].mean():.2f}",
+            f"{filtered_data[selected_condition+'_'+second_result_colname].std():.2f}",
+            f"{filtered_data[selected_condition+'_'+third_result_colname].mean():.2f}",
+            f"{filtered_data[selected_condition+'_'+third_result_colname].std():.2f}"
         ]
     })
 
-    ## Plot desired variables
-    
+    ### Plot results
     st.subheader('Plot', divider=True)
 
-    # Select columns for plotting
-    numeric_columns = filtered_data.select_dtypes(include=['float64', 'int64']).columns
+    # Create subplots
+    fig = make_subplots(rows=3, cols=1, subplot_titles=y_variable_plot_colnames)
 
-    # Select x and y variables
-    x_variable = st.selectbox("Select x variable", numeric_columns)
-    y_variable = st.selectbox("Select y variable", numeric_columns)
+    for i, y_variable in enumerate(y_variable_plot_colnames, start=1):
 
-    if x_variable and y_variable:
-        fig = go.Figure()
-
-        # Calculate mean and standard deviation for y variable
-        mean = filtered_data[y_variable].mean()
-        std = filtered_data[y_variable].std()
-
-        # Add trace for actual values
-        fig.add_trace(go.Scatter(
-            x=filtered_data[x_variable],
-            y=filtered_data[y_variable],
+        scatter = go.Scatter(
+            x=filtered_data[x_variable_plot_colname],
+            y=filtered_data[selected_condition+'_'+y_variable],
             mode='markers',
-            name=f'{y_variable} Values',
-            line=dict(dash='solid')
-        ))
-
-        # # Add trace for mean
-        # fig.add_trace(go.Scatter(
-        #     x=filtered_data[x_variable],
-        #     y=[mean] * len(filtered_data),
-        #     mode='lines',
-        #     name=f'{y_variable} Mean',
-        #     line=dict(dash='solid')
-        # ))
-
-        # # Add traces for standard deviation
-        # fig.add_trace(go.Scatter(
-        #     x=filtered_data[x_variable],
-        #     y=[mean + std] * len(filtered_data),
-        #     mode='lines',
-        #     name=f'{y_variable} +1 STD',
-        #     line=dict(dash='dot')
-        # ))
-        # fig.add_trace(go.Scatter(
-        #     x=filtered_data[x_variable],
-        #     y=[mean - std] * len(filtered_data),
-        #     mode='lines',
-        #     name=f'{y_variable} -1 STD',
-        #     line=dict(dash='dot')
-        # ))
-
-        fig.update_layout(
-            title=f'{y_variable} vs {x_variable}',
-            xaxis_title=x_variable,
-            yaxis_title=y_variable,
-            legend_title='Metrics'
+            name=y_variable,
+            marker=dict(
+                color=filtered_data[colorcode_variable_plot_colname],
+                colorscale='Viridis',
+                showscale=True if i == 3 else False,  # Show colorbar only for the last plot
+                colorbar=dict(
+                    title=colorcode_variable_plot_colname,
+                    len=0.5,  # Length of the colorbar (0-1)
+                    thickness=15,  # Width of the colorbar in pixels
+                    x=1.02,  # Position
+                    y=0.5,  # Position
+                    yanchor='middle'
+                ) if i == 3 else None
+            )
         )
+        
+        fig.add_trace(scatter, row=i, col=1)
+        
+        fig.update_xaxes(title_text=x_variable_plot_colname, row=i, col=1)
+        fig.update_yaxes(title_text=y_variable, row=i, col=1)
 
-        st.plotly_chart(fig)
-    else:
-        st.warning("Please select both x and y variables to plot.")
+    fig.update_layout(height=900, width=1200)
+
+    st.plotly_chart(fig)
+
 else:
     st.warning("No data available for the selected filters.")
