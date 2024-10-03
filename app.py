@@ -1,9 +1,9 @@
-import streamlit as st
 import pandas as pd
-import sqlite3
-from sqlite3 import Connection
+from pathlib import Path
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from sqlite3 import connect, Connection
+import streamlit as st
 
 #### Set Up -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -61,9 +61,18 @@ st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
 
 # Function to load data into SQLite database
 @st.cache_resource
-def load_data_to_sqlite(csv_file: str) -> Connection:
-    conn = sqlite3.connect(':memory:', check_same_thread=False)
-    df = pd.read_excel(csv_file)
+def load_data_to_sqlite(file_path: str) -> Connection:
+    conn = connect(':memory:', check_same_thread=False)
+    file_extension = Path(file_path).suffix.lower()
+    
+    if file_extension == '.xlsx':
+        df = pd.read_excel(file_path)
+    elif file_extension in ('.csv', '.tsv'):
+        separator = '\t' if file_extension == '.tsv' else ','
+        df = pd.read_csv(file_path, sep=separator)
+    else:
+        raise ValueError(f"Unsupported file type: {file_extension}")
+    
     df.to_sql('data', conn, if_exists='replace', index=False)
     return conn
 
@@ -194,7 +203,7 @@ if not filtered_data.empty:
     st.subheader(f'{result1_colname.replace('_',' ')}, {result2_colname.replace('_',' ')} and {result3_colname.replace('_',' ')}', divider=True)
 
     # Sum up selected parameters
-    st.subheader("Simulation Parameters")
+    st.subheader("Filtering Parameters")
     st.table({
         "Parameter": [
             f"{singlevalued_filter1_colname.replace('_',' ')}",
@@ -215,7 +224,7 @@ if not filtered_data.empty:
     })
 
     # Report results
-    st.subheader("Statistics")
+    st.subheader("Results statistics")
     st.table({
         "Metric": [f"{result1_colname.replace('_',' ')} mean", f"{result1_colname.replace('_',' ')} st.dev", 
                    f"{result2_colname.replace('_',' ')} mean", f"{result2_colname.replace('_',' ')} st.dev",
