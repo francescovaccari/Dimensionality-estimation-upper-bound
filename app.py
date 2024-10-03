@@ -5,28 +5,37 @@ from sqlite3 import Connection
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-#### Set Up
+#### Set Up -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Specify csv column names representing parameters to filter data --------------> substitute with (first,second, etc)_data_filter_colname
-generative_process_colname = 'Generative_process'
-noise_distribution_colname = 'Noise_distribution'
-normalization_method_colname = 'Final_normalization'
-ts_length_colname = 'Time_Series_Length'
-synth_neurons_colname = 'Syntethic_Neurons'
-variance_decay_colname = 'Tau'
+# Data filtering parameters: 
+# Specify csv column names representing parameters to filter data (1, 2, 3, etc. is the order of appearance on the webapp)
 
-# Specify condition/method-specific prefixes (if any) 
-# for csv column names representing variables to exhibit as results
-conditions_prefix_colname = ['PA', 'CV', 'K1', 'PR', '80%', '90%']
+# Single-valued filters (low/high number of values)
+singlevalued_filter1_colname = 'Generative_process'
+singlevalued_filter2_colname = 'Noise_distribution'
+singlevalued_filter3_colname = 'Final_normalization'
 
+# Ranges (low number of values)
+range_discrete_filter1_colname = 'Time_Series_Length'
+range_discrete_filter2_colname = 'Syntethic_Neurons'
+
+# Ranges (high number of values)
+range_continuous_filter1_colname = 'Tau'
+
+# Condition/method-specific prefixes: 
+# If any, specify for prefixes csv column names representing variables to exhibit as results
+conditions_prefix_list = ['PA', 'CV', 'K1', 'PR', '80%', '90%']
+
+# Results variables:
 # Specify csv column names representing variables to exhibit as results (mean and std)
-first_result_colname = 'Identifiable_Dimensions'
-second_result_colname = 'Real_data_in_denoised_matrix'
-third_result_colname = 'Estimated_noise_err'
+result1_colname = 'Identifiable_Dimensions'
+result2_colname = 'Real_data_in_denoised_matrix'
+result3_colname = 'Estimated_noise_err'
 
+# Scatterplots variables:
 # Specify csv column names to plot
-y_variable_plot_colnames = [first_result_colname, second_result_colname, third_result_colname]
-x_variable_plot_colname = variance_decay_colname
+y_variable_plot_colnames = [result1_colname, result2_colname, result3_colname]
+x_variable_plot_colname = range_continuous_filter1_colname
 colorcode_variable_plot_colname = 'Noise'
 
 # Page layout
@@ -48,7 +57,7 @@ st.write("Lorem ipsum dolor sit amet, consectetur adipiscing elit, \
           qui officia deserunt mollit anim id est laborum.")
 
 
-#### Data Loading
+#### Data Loading -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Function to load data into SQLite database
 @st.cache_resource
@@ -65,6 +74,7 @@ conn = load_data_to_sqlite(dataset)
 
 #### Input selection for data filtering
 
+# Section title
 st.subheader("Filter the data" ,divider=True)
 
 # Function to get unique values from a column
@@ -72,127 +82,170 @@ def get_unique_values(column: str) -> list:
     query = f"SELECT DISTINCT {column} FROM data"
     return [row[0] for row in conn.execute(query).fetchall()]
 
-## Dropdowns
+## Vertical dropdowns: Single-valued filters (low/high number of values)
 
-# Generative Process
-generative_process = get_unique_values(generative_process_colname)
-selected_process = st.selectbox('Generative process:', generative_process)
+# Filter 1
+singlevalued_filter1 = get_unique_values(singlevalued_filter1_colname)
+label = singlevalued_filter1_colname.replace('_', ' ')
+selected_singlevalued_filter1 = st.selectbox(f'{label}:', singlevalued_filter1)
 
-# Noise Distribution
-noise_distribution = get_unique_values(noise_distribution_colname)
-selected_distribution = st.selectbox('Noise distribution:', noise_distribution)
+# Filter 2
+singlevalued_filter2 = get_unique_values(singlevalued_filter2_colname)
+label = singlevalued_filter2_colname.replace('_', ' ')
+selected_singlevalued_filter2 = st.selectbox(f'{label}:', singlevalued_filter2)
 
-# Final Normalization Method
-normalization_method = get_unique_values(normalization_method_colname)
-selected_normalization = st.selectbox('Normalization method:', normalization_method)
+# Filter 3
+singlevalued_filter3 = get_unique_values(singlevalued_filter3_colname)
+label = singlevalued_filter3_colname.replace('_', ' ')
+selected_singlevalued_filter3 = st.selectbox(f'{label}:', singlevalued_filter3)
 
-## Sliders 
+## Horizontal dropdowns: Ranges (low number of values)
 
-# Synthetic neurons
-synth_neurons = get_unique_values(synth_neurons_colname)
-selected_units_min, selected_units_max = st.select_slider('Number of synthetic neurons:', 
-                           options = synth_neurons, 
-                           value=(synth_neurons[0], synth_neurons[-1]))
+# Filter 1
+lowerbound_1, upperbound_1 = st.columns(2)
+range_discrete_filter1 = sorted(get_unique_values(range_discrete_filter1_colname))
+label = range_discrete_filter1_colname.replace('_', ' ')
+with lowerbound_1:
+    selected_range_discrete_filter1_min = st.selectbox(
+        f'Min {label}:',
+        range_discrete_filter1,
+        key='min_filter1'
+    )
+with upperbound_1:
+    selected_range_discrete_filter1_max = st.selectbox(
+        f'Max {label}:',
+        range_discrete_filter1,
+        key='max_filter1'
+    )
+if selected_range_discrete_filter1_min > selected_range_discrete_filter1_max:
+    st.error("Error: minimum value must be less than or equal to maximum value.")
 
-# Timeseries length
-ts_length = get_unique_values(ts_length_colname)
-selected_length_min, selected_length_max = st.select_slider('Timeseries length:', 
-                            options = ts_length, 
-                            value=(ts_length[0], ts_length[-1]))
+# Filter 2
+lowerbound_2, upperbound_2 = st.columns(2)
+range_discrete_filter2 = sorted(get_unique_values(range_discrete_filter2_colname))
+label = range_discrete_filter2_colname.replace('_', ' ')
+with lowerbound_2:
+    selected_range_discrete_filter2_min = st.selectbox(
+        f'Min {label}:',
+        range_discrete_filter2,
+        key='min_filter2'
+    )
+with upperbound_2:
+    selected_range_discrete_filter2_max = st.selectbox(
+        f'Max {label}:',
+        range_discrete_filter2,
+        key='max_filter2'
+    )
+if selected_range_discrete_filter2_min > selected_range_discrete_filter2_max:
+    st.error("Error: minimum value must be less than or equal to maximum value.")
 
-# Latent variance decay: Tau
-variance_decay = get_unique_values(variance_decay_colname)
-selected_decay_min, selected_decay_max = st.select_slider('Latent variance decay (\u03C4):', 
-                            options = variance_decay, 
-                            value=(variance_decay[0], variance_decay[-1]))
+## Sliders (ranges w/ high number of values)
+
+# Filter 1
+range_continuous_filter1 = sorted(get_unique_values(range_continuous_filter1_colname))
+label = range_continuous_filter1_colname.replace('_', ' ')
+selected_range_continuous_filter1_min, selected_range_continuous_filter1_max = st.select_slider(f'{label}:',
+                            options = range_continuous_filter1, 
+                            value=(range_continuous_filter1[0], range_continuous_filter1[-1]))
 
 
-#### Data filtering
+#### Data filtering -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Query data based on selection
 query = f"""
 SELECT * FROM data 
-WHERE {generative_process_colname} = ?
-AND {noise_distribution_colname} = ? 
-AND {normalization_method_colname} = ? 
-AND {synth_neurons_colname} BETWEEN ? AND ? 
-AND {ts_length_colname} BETWEEN ? AND ?
-AND {variance_decay_colname} BETWEEN ? AND ?
+WHERE {singlevalued_filter1_colname} = ?
+AND {singlevalued_filter2_colname} = ? 
+AND {singlevalued_filter3_colname} = ?
+AND {range_discrete_filter1_colname} BETWEEN ? AND ? 
+AND {range_discrete_filter2_colname} BETWEEN ? AND ?
+AND {range_continuous_filter1_colname} BETWEEN ? AND ?
 """
 
 # Execute the query with the parameters
-query_params = (selected_process, selected_distribution, selected_normalization, 
-          selected_units_min, selected_units_max, 
-          selected_length_min, selected_length_max,
-          selected_decay_min, selected_decay_max
-          )
+query_params = (
+    selected_singlevalued_filter1, 
+    selected_singlevalued_filter2, 
+    selected_singlevalued_filter3, 
+    selected_range_discrete_filter1_min, 
+    selected_range_discrete_filter1_max, 
+    selected_range_discrete_filter2_min, 
+    selected_range_discrete_filter2_max,
+    selected_range_continuous_filter1_min, 
+    selected_range_continuous_filter1_max
+    )
 
 # Filter the dataframe and display
 filtered_data = pd.read_sql(query, conn, params=query_params)
 st.write(filtered_data)
 
 
-#### Elaborate filtered data
+#### Elaborate filtered data -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 if not filtered_data.empty:
 
-    # Choose methods ---------------------------------> find more general term
-    selected_condition = st.selectbox('Choose a method/condition:', conditions_prefix_colname)
+    # Prompt user to choose results columns prefix, if any
+    if len(conditions_prefix_list) > 0:
+        selected_prefix = st.selectbox('Select a method:', conditions_prefix_list) + '_'
+    else:
+        selected_prefix = ''
 
     ### Report results' mean and std 
-    st.subheader(f'{first_result_colname.replace('_',' ')}, {second_result_colname.replace('_',' ')} and {third_result_colname.replace('_',' ')}', divider=True)
+    st.subheader(f'{result1_colname.replace('_',' ')}, {result2_colname.replace('_',' ')} and {result3_colname.replace('_',' ')}', divider=True)
 
     # Sum up selected parameters
     st.subheader("Simulation Parameters")
     st.table({
-        "Parameter": [f"{generative_process_colname.replace('_',' ')}",
-                    f"{noise_distribution_colname.replace('_',' ')}",
-                    f"{normalization_method_colname.replace('_',' ')}",
-                    f"{ts_length_colname.replace('_',' ')}",
-                    f"{synth_neurons_colname.replace('_',' ')}",
-                    f"{variance_decay_colname.replace('_',' ')}",
-                    ],
-        "Value": [(selected_process),
-                  (selected_distribution),
-                  (selected_normalization),
-                  (selected_length_min, selected_length_max), 
-                  (selected_units_min, selected_units_max), 
-                  (selected_decay_min, selected_decay_max),
+        "Parameter": [
+            f"{singlevalued_filter1_colname.replace('_',' ')}",
+            f"{singlevalued_filter2_colname.replace('_',' ')}",
+            f"{singlevalued_filter3_colname.replace('_',' ')}",
+            f"{range_discrete_filter1_colname.replace('_',' ')}",
+            f"{range_discrete_filter2_colname.replace('_',' ')}",
+            f"{range_continuous_filter1_colname.replace('_',' ')}",
+        ],
+        "Value": [
+            (selected_singlevalued_filter1),
+            (selected_singlevalued_filter2),
+            (selected_singlevalued_filter3),
+            (selected_range_discrete_filter1_min, selected_range_discrete_filter1_max), 
+            (selected_range_discrete_filter2_min, selected_range_discrete_filter2_max), 
+            (selected_range_continuous_filter1_min, selected_range_continuous_filter1_max),
                   ]
     })
 
     # Report results
     st.subheader("Statistics")
     st.table({
-        "Metric": [f"{first_result_colname.replace('_',' ')} mean", f"{first_result_colname.replace('_',' ')} st.dev", 
-                   f"{second_result_colname.replace('_',' ')} mean", f"{second_result_colname.replace('_',' ')} st.dev",
-                   f"{third_result_colname.replace('_',' ')} mean", f"{third_result_colname.replace('_',' ')} st.dev"],
+        "Metric": [f"{result1_colname.replace('_',' ')} mean", f"{result1_colname.replace('_',' ')} st.dev", 
+                   f"{result2_colname.replace('_',' ')} mean", f"{result2_colname.replace('_',' ')} st.dev",
+                   f"{result3_colname.replace('_',' ')} mean", f"{result3_colname.replace('_',' ')} st.dev"],
         "Value": [
-            f"{filtered_data[selected_condition+'_'+first_result_colname].mean():.2f}",
-            f"{filtered_data[selected_condition+'_'+first_result_colname].std():.2f}",
-            f"{filtered_data[selected_condition+'_'+second_result_colname].mean():.2f}",
-            f"{filtered_data[selected_condition+'_'+second_result_colname].std():.2f}",
-            f"{filtered_data[selected_condition+'_'+third_result_colname].mean():.2f}",
-            f"{filtered_data[selected_condition+'_'+third_result_colname].std():.2f}"
+            f"{filtered_data[selected_prefix+result1_colname].mean():.2f}",
+            f"{filtered_data[selected_prefix+result1_colname].std():.2f}",
+            f"{filtered_data[selected_prefix+result2_colname].mean():.2f}",
+            f"{filtered_data[selected_prefix+result2_colname].std():.2f}",
+            f"{filtered_data[selected_prefix+result3_colname].mean():.2f}",
+            f"{filtered_data[selected_prefix+result3_colname].std():.2f}"
         ]
     })
 
     ### Plot results
-    st.subheader('Plot', divider=True)
+    st.subheader('Plots', divider=True)
 
     # Create subplots
-    fig = make_subplots(rows=3, cols=1, subplot_titles=y_variable_plot_colnames)
+    fig = make_subplots(rows=3, cols=1, subplot_titles=[s.replace('_',' ') for s in y_variable_plot_colnames])
 
     for i, y_variable in enumerate(y_variable_plot_colnames, start=1):
 
         scatter = go.Scatter(
             x=filtered_data[x_variable_plot_colname],
-            y=filtered_data[selected_condition+'_'+y_variable],
+            y=filtered_data[selected_prefix+y_variable],
             mode='markers',
             name=y_variable,
             marker=dict(
                 color=filtered_data[colorcode_variable_plot_colname],
-                colorscale='Viridis',
+                colorscale='Bluered',
                 showscale=True if i == 3 else False,  # Show colorbar only for the last plot
                 colorbar=dict(
                     title=colorcode_variable_plot_colname,
@@ -207,8 +260,10 @@ if not filtered_data.empty:
         
         fig.add_trace(scatter, row=i, col=1)
         
-        fig.update_xaxes(title_text=x_variable_plot_colname, row=i, col=1)
-        fig.update_yaxes(title_text=y_variable, row=i, col=1)
+        x_label = x_variable_plot_colname.replace('_', ' ')
+        y_label = y_variable.replace('_', ' ')
+        fig.update_xaxes(title_text=x_label, row=i, col=1)
+        fig.update_yaxes(title_text=y_label, row=i, col=1)
 
     fig.update_layout(height=900, width=1200)
 
