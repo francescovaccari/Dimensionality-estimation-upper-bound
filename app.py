@@ -17,7 +17,7 @@ singlevalued_filter3_colname = 'Final_normalization'
 
 # Ranges (low number of values)
 range_discrete_filter1_colname = 'Time_Series_Length'
-range_discrete_filter2_colname = 'Syntethic_Neurons'
+range_discrete_filter2_colname = 'Synthetic_Neurons'
 
 # Ranges (high number of values)
 range_continuous_filter1_colname = 'Tau'
@@ -193,14 +193,15 @@ st.write(filtered_data)
 
 if not filtered_data.empty:
 
+    ### Report results' mean and std 
+    st.subheader(f'{result1_colname.replace('_',' ')}, {result2_colname.replace('_',' ')} and {result3_colname.replace('_',' ')}', divider=True)
+
+
     # Prompt user to choose results columns prefix, if any
     if len(conditions_prefix_list) > 0:
         selected_prefix = st.selectbox('Select a method:', conditions_prefix_list) + '_'
     else:
         selected_prefix = ''
-
-    ### Report results' mean and std 
-    st.subheader(f'{result1_colname.replace('_',' ')}, {result2_colname.replace('_',' ')} and {result3_colname.replace('_',' ')}', divider=True)
 
     # Sum up selected parameters
     st.subheader("Filtering Parameters")
