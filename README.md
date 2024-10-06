@@ -1,16 +1,18 @@
-# 
+# Explore-our-data-app
 
-This is a simple app built and maintained on [Streamlit](link to docs). It allows a showcast, filtering and plotting of tabular data in the most common formats (csv, tsv, xlsl).
-Data filtering and results report/plotting can be customized by filling a configuration JSON file.
+Just a minimal csv explorer app, built and hosted on [Streamlit](https://docs.streamlit.io/). It allows custom filtering and plotting of tabular data, in the most common formats (csv, tsv, xlsl).
+To specify which columns represent data filters, results and plots variables, a JSON file is provided in the repo (check the [template](config.json5)).
 
-To give an idea of how this app can be used for research purposes, [Vaccari et al. 2024]() uses it to show/plot simulations of neural data, give a look [here](https://simulations-plotter-app-epkw2t8vpkwmaj3pqvtwjp.streamlit.app/)
+**What's the use of this app?**
+If you're looking for a way to show your data in a free, simple and effective interface: that's the case. 
 
-Main purpose of this app is to allow exploring and sharing of research data for the sake of open-science and replicability.
-Since no security measures are allowed
+**A case use from open-research**
+[Vaccari et al. 2024](Link) computed simulations of neural data based on multiple combinations of parameters (like the number of neurons, length of recordings, etc), then used different methods to estimate the least number of dimensions representing the signal.
+Since the process can be computationally intensive and time-consuming, they released the simulations data for everyone to use (and save some energy (green symbol)), and provided a [link]() to this app to let readers filter them and check results statistics and plots.
 
 ## From installation to deployment
 
-Installation is very easy, just get the repo, create and activate a python or conda environment
+Installation is very easy, just get the repo, create and activate a python (or conda) environment
 
 ### Steps
 
@@ -60,7 +62,7 @@ git push origin
 
 4. Create an account on [Streamlit cloud](link).
 
-5. Add your forked repo to 
+5. Add your forked repo to your own Streamlit account, and deploy from there.
 
 ## Features
 
