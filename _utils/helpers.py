@@ -107,7 +107,7 @@ def display_filters_summary(filter_config: Dict, selected_filters: Dict) -> None
     parameters = []
     values = []
     for filter_type, filters in filter_config.items():
-        for filter_name, filter_details in filters.items():
+        for filter_name, _ in filters.items():
             if filter_type == 'single_valued':
                 parameters.extend([
                     f"{filter_name}",
