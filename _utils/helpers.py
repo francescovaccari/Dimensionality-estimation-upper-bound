@@ -6,6 +6,9 @@ import streamlit as st
 from sqlite3 import connect, Connection
 from typing import Dict, List, Tuple
 import json5
+import requests
+from io import BytesIO
+import os
 
 def load_config(config_path: str) -> dict:
     """
@@ -32,6 +35,33 @@ def load_data_to_sqlite(file_path: str) -> Connection:
     
     df.to_sql('data', conn, if_exists='replace', index=False)
     return conn
+
+@st.cache_resource
+def get_file_extension(url):
+    return os.path.splitext(url)[1].lower()
+
+@st.cache_resource
+def load_data_from_url(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        content = BytesIO(response.content)
+        
+        file_extension = get_file_extension(url)
+        
+        if file_extension == '.csv':
+            return pd.read_csv(content)
+        elif file_extension == '.tsv':
+            return pd.read_csv(content, sep='\t')
+        elif file_extension in ['.xlsx', '.xls']:
+            return pd.read_excel(content)
+        else:
+            st.error(f"Unsupported file format: {file_extension}")
+            return None
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        return None
+
 
 def get_unique_values(conn: Connection, column: str) -> List:
     """
@@ -89,8 +119,12 @@ def build_query(filters: Dict, selected_filters: Dict) -> Tuple[str, List]:
                 conditions.append(f"{column} = ?")
                 params.append(selected_filters[column])
             elif filter_type in ['range_discrete', 'range_continuous']:
-                conditions.append(f"{column} BETWEEN ? AND ?")
-                params.extend([selected_filters[f"{column}_min"], selected_filters[f"{column}_max"]])
+                if selected_filters[f"{column}_min"] == selected_filters[f"{column}_max"]:
+                    conditions.append(f"{column} = ?")
+                    params.extend([selected_filters[f"{column}_min"]])
+                else:  
+                    conditions.append(f"{column} BETWEEN ? AND ?")                                      
+                    params.extend([selected_filters[f"{column}_min"], selected_filters[f"{column}_max"]])
     
     query = f"SELECT * FROM data WHERE {' AND '.join(conditions)}"
     return query, params
@@ -110,23 +144,25 @@ def display_filters_summary(filter_config: Dict, selected_filters: Dict) -> None
         for filter_name, _ in filters.items():
             if filter_type == 'single_valued':
                 parameters.extend([
-                    f"{filter_name}",
+                    f"{filter_name.replace('_', ' ')}",
                 ])
                 values.extend({
                     f"{selected_filters[filter_name]}",
                 })
             elif filter_type in ['range_discrete', 'range_continuous']:
                 parameters.extend([
-                    f"{filter_name}_min",
-                    f"{filter_name}_max",
+                    f"{filter_name.replace('_', ' ')} min",
+                    f"{filter_name.replace('_', ' ')} max",
                 ])
-                values.extend({
+                values.extend([
                     selected_filters[f"{filter_name}_min"],
-                    selected_filters[f"{filter_name}_max"],
-                })
+                    selected_filters[f"{filter_name}_max"]
+                ])
 
-    st.table({"Parameter": parameters, 
-               "Value": values})
+    st.table(pd.DataFrame.from_dict({
+        "Parameters" : parameters,
+        "Values" : values
+    }))
 
 def display_results(data: pd.DataFrame, results_config: Dict, condition_prefix: str) -> None:
     """
@@ -169,6 +205,7 @@ def create_subplots(data: pd.DataFrame, plot_config: Dict, prefix: str) -> go.Fi
             y=data[prefix+y_variable],
             mode='markers',
             name=y_variable,
+            showlegend=False,
             marker=dict(
                 color=data[plot_config['color_variable']],
                 colorscale='Bluered',
@@ -180,7 +217,7 @@ def create_subplots(data: pd.DataFrame, plot_config: Dict, prefix: str) -> go.Fi
                     x=1.02,
                     y=0.5,
                     yanchor='middle'
-                ) if i == len(plot_config['y_axes']) else None
+                ) if i == len(plot_config['y_axes']) else None,
             )
         )
         

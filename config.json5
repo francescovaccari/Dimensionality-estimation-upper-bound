@@ -15,6 +15,9 @@
   // Path to your dataset file, relative to the app's root directory
   path_to_data: "data/Final_table.csv",
 
+  // URL link to the data source
+  data_url: "",
+
   // Data Filters Configuration
   filters: {
     // Single-valued filters (displayed as dropdown selectors)

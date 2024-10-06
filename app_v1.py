@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from _utils.helpers import load_config, load_data_to_sqlite, build_query, create_subplots, create_filter_widgets, display_filters_summary, display_results
+from _utils.helpers import load_config, load_data_from_url, load_data_to_sqlite, build_query, create_subplots, create_filter_widgets, display_filters_summary, display_results
 
 # Load configuration
 config = load_config('config.json5')
@@ -13,8 +13,13 @@ st.write(config['description'])
 # Section title
 st.subheader("Filter the data" ,divider=True)
 
-# Load data
-conn = load_data_to_sqlite(config['path_to_data'])
+# Load data, either from url or from a path
+if config['data_url']:
+    conn = load_data_from_url(config['data_url'])
+    st.write("Data from configured URL:")
+    st.write(conn)
+else:
+    conn = load_data_to_sqlite(config['path_to_data'])
 
 # Create filter widgets
 selected_filters = create_filter_widgets(conn, config['filters'])

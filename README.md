@@ -50,9 +50,11 @@ git clone èèèèèèèèèèèèèèèèè
 
 1. Put your own data in the `/data` folder. Supported formats: csv, tsv, xlxs. File size is limited to 50 MB by Github, and to 200 MB by Streamlit.
 
-2. Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results, plot variables.
+2. Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results and plot variables.
 
-3. Push the your personal forked repository.
+[small example from json]
+
+3. Push the modifications to the forked repository.
 ```bash
 cd forked-repo
 git add .
