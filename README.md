@@ -14,27 +14,28 @@ Since the process can be computationally intensive and time-consuming, they rele
 
 The process from installation to deployment is quite straightforward: fork this repo to your own github account and clone the forked repo to your local machine; then, create and activate a python (or conda) environment with all the required libraries
 
-### Installation
+### Installation :gear:
 
-1. Fork the repository:
+**1.** Fork this repository directly on [Github](https://github.com/):
 
-A fork is like your own copy of the project. To fork a repository:
+A fork is like your own copy of the project. 
+In case you are not familiar with the process of forking:
 
-**Click the "Fork" Button**: At the top right of this page, you’ll see a button that says Fork. Click it.
+    1. *Click the "Fork" Button*: At the top right of this page, you’ll see a button that says Fork. Click it.
 
-**Choose Your Account**: GitHub will ask where you want to fork the project. Select your GitHub account.
-    
-**Wait for the Fork to Complete**: After a few moments, you’ll have your own copy of this project under your GitHub account!
+    2. *Choose Your Account*: GitHub will ask where you want to fork the project. Select your GitHub account.
+        
+    3. *Wait for the Fork to Complete*: After a few moments, you’ll have your own copy of this project under your GitHub account!
 
 
-2. Clone the forked repository and navigate to root:
+**2.** Clone the forked repository and navigate to root:
 
 ```bash
 git clone https://github.com/[YourUsername]/[YourForkedRepo].git
 cd YourForkedRepo
 ```
 
-3. Create a virtual environment, activate it and install the requirements, with conda:
+**3.** Create a virtual environment, activate it and install the requirements, with conda:
 ```bash
 conda create -n streamlit-app python
 conda activate streamlit-app
@@ -47,7 +48,7 @@ source <path/to/venv>/bin/activate
 pip install -r requirements
 ```
 
-## Customization
+### Customization :pencil:  🛠️
 
 1. Put your own data in the `/data` folder, or just get the data from an external source. 
 Specify the data source accordingly:
@@ -103,7 +104,7 @@ git commit -m "Added data source; customized config file"
 git push origin
 ```
 
-## Deployment
+### Deployment :rocket:
 
 1. Create an account on [Streamlit Cloud](https://share.streamlit.io/).
 2. Log in to your Streamlit Cloud account
