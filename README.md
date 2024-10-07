@@ -12,7 +12,15 @@ Since the process can be computationally intensive and time-consuming, they rele
 
 ## Install, customize and deploy
 
-The process from installation to deployment is quite straightforward: fork this repo to your own github account and clone the forked repo to your local machine; specify a local (internal to the repo) or remote data source and customize the config file; create an account on Streamlit, connect your forker repo and deploy. A bit more detailed guide:
+The process from installation to deployment is quite straightforward: 
+
+*Install:* fork this repo to your own github account and clone the forked repo to your local machine;
+
+*Customize:* specify a local (internal to the repo) or remote data source and customize the config file; 
+
+*Deploy:* create an account on Streamlit, connect your forker repo and deploy. 
+
+For a bit more detailed guide:
 
 ### Installation :gear:
 
@@ -31,8 +39,8 @@ In case you are not familiar with the process of forking:
 **2.** Clone the forked repository and navigate to root:
 
 ```bash
-git clone https://github.com/[YourUsername]/[YourForkedRepo].git
-cd YourForkedRepo
+git clone https://github.com/[YourUsername]/[forked-repo].git
+cd forked-repo
 ```
 
 **In case you want to check you app locally (after the customization step):**
@@ -52,6 +60,7 @@ pip install -r requirements
 
 **4.** Run streamlit locally (it will open the app on a browser window):
 ```bash
+cd forked-repo
 streamlit run app.py
 ```
 
