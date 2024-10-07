@@ -21,11 +21,11 @@ The process from installation to deployment is quite straightforward: fork this 
 A fork is like your own copy of the project. 
 In case you are not familiar with the process of forking:
 
-    1. *Click the "Fork" Button*: At the top right of this page, you’ll see a button that says Fork. Click it.
+1. *Click the "Fork" Button*: At the top right of this page, you’ll see a button that says Fork. Click it.
 
-    2. *Choose Your Account*: GitHub will ask where you want to fork the project. Select your GitHub account.
-        
-    3. *Wait for the Fork to Complete*: After a few moments, you’ll have your own copy of this project under your GitHub account!
+2. *Choose Your Account*: GitHub will ask where you want to fork the project. Select your GitHub account.
+    
+3. *Wait for the Fork to Complete*: After a few moments, you’ll have your own copy of this project under your GitHub account!
 
 
 **2.** Clone the forked repository and navigate to root:
@@ -48,9 +48,9 @@ source <path/to/venv>/bin/activate
 pip install -r requirements
 ```
 
-### Customization :pencil:  🛠️
+### Customization :pencil:
 
-1. Put your own data in the `/data` folder, or just get the data from an external source. 
+**1.** Put your own data in the `/data` folder, or just get the data from an external source. 
 Specify the data source accordingly:
 
 ```json5
@@ -61,7 +61,7 @@ data_source: {
 ```
 Supported formats: csv, tsv, xlxs. File size is limited to 50 MB by Github, and to 200 MB by Streamlit.
 
-2. Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results and plot variables. For example:
+**2.** Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results and plot variables. For example:
 
 ```json5
 // Data Filters Configuration
@@ -96,7 +96,7 @@ range_continuous: [
 }
 ```
 
-3. Push the modifications to the forked repository.
+**3.** Push the modifications to the forked repository.
 ```bash
 cd forked-repo
 git add .
@@ -106,12 +106,12 @@ git push origin
 
 ### Deployment :rocket:
 
-1. Create an account on [Streamlit Cloud](https://share.streamlit.io/).
-2. Log in to your Streamlit Cloud account
-3. Click "New app"
-4. Select your GitHub account and the repository you created
-5. Choose the main file (`app.py`)
-6. Click "Deploy"
+**1.** Create an account on [Streamlit Cloud](https://share.streamlit.io/).
+**2.** Log in to your Streamlit Cloud account
+**3.** Click "New app"
+**4.** Select your GitHub account and the repository you created
+**5.** Choose the main file (`app.py`)
+**6.** Click "Deploy"
 
 
 ## Contributing
