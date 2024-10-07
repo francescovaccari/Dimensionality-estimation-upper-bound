@@ -8,24 +8,36 @@ If you're looking for a way to show your data in a free, simple and effective in
 
 **A case use from open-research**
 [Vaccari et al. 2024](Link) computed simulations of neural data based on multiple combinations of parameters (like the number of neurons, length of recordings, etc), then used different methods to estimate the least number of dimensions representing the signal.
-Since the process can be computationally intensive and time-consuming, they released the simulations data for everyone to use (and save some energy (green symbol)), and provided a [link]() to this app to let readers filter them and check results statistics and plots.
+Since the process can be computationally intensive and time-consuming, they released the simulated data for everyone to use (and save some energy :seedling:), and provided a [link]() to their own version of this app, so that readers could filter the data and explore specific results.
 
-## From installation to deployment
+## Install, customize and deploy
 
-Installation is very easy, just get the repo, create and activate a python (or conda) environment
+The process from installation to deployment is quite straightforward: fork this repo to your own github account and clone the forked repo to your local machine; then, create and activate a python (or conda) environment with all the required libraries
 
-### Steps
+### Installation
 
-1. Clone this repository and navigate to root:
+1. Fork the repository:
+
+A fork is like your own copy of the project. To fork a repository:
+
+**Click the "Fork" Button**: At the top right of this page, you’ll see a button that says Fork. Click it.
+
+**Choose Your Account**: GitHub will ask where you want to fork the project. Select your GitHub account.
+    
+**Wait for the Fork to Complete**: After a few moments, you’ll have your own copy of this project under your GitHub account!
+
+
+2. Clone the forked repository and navigate to root:
+
 ```bash
-git clone git@github.com:EdoardoBettazzi/explore-our-data-app.git
-cd explore-our-data
+git clone https://github.com/[YourUsername]/[YourForkedRepo].git
+cd YourForkedRepo
 ```
 
-2. Create a virtual environment, activate it and install the requirements, with conda:
+3. Create a virtual environment, activate it and install the requirements, with conda:
 ```bash
-conda create -n explore_our_data python
-conda activate explore_our_data
+conda create -n streamlit-app python
+conda activate streamlit-app
 pip install -r requirements
 ```
 or with python:
@@ -35,39 +47,73 @@ source <path/to/venv>/bin/activate
 pip install -r requirements
 ```
 
-3. 
-```bash
-git clone èèèèèèèèèèèèèèèèè
+## Customization
+
+1. Put your own data in the `/data` folder, or just get the data from an external source. 
+Specify the data source accordingly:
+
+```json5
+data_source: {
+      path: "data/your_data.csv",
+      url: "",
+    }
 ```
+Supported formats: csv, tsv, xlxs. File size is limited to 50 MB by Github, and to 200 MB by Streamlit.
 
-4. fff
-```bash
-git clone èèèèèèèèèèèèèèèèè
+2. Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results and plot variables. For example:
+
+```json5
+// Data Filters Configuration
+filters: {
+// Single-valued filters (displayed as dropdown selectors)
+single_valued: [
+    {
+    name: "column_name",
+    label: "variable name",
+    },
+
+    // Add more filters
+],
+
+// Range filters with discrete values (displayed as two horizontal dropdown selectors)
+range_discrete: [
+    {
+    name: "column_name",
+    label: "variable name",
+    },
+
+    // Add more filters
+],
+
+// Range filters with continuous values (displayed as a slider)
+range_continuous: [
+    {
+    name: "column_name",
+    label: "variable name",
+    },
+],
+}
 ```
-
-
-## Setup
-
-1. Put your own data in the `/data` folder. Supported formats: csv, tsv, xlxs. File size is limited to 50 MB by Github, and to 200 MB by Streamlit.
-
-2. Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results and plot variables.
-
-[small example from json]
 
 3. Push the modifications to the forked repository.
 ```bash
 cd forked-repo
 git add .
-git commit -m "Initial commit"
+git commit -m "Added data source; customized config file"
 git push origin
 ```
 
-4. Create an account on [Streamlit cloud](link).
+## Deployment
 
-5. Add your forked repo to your own Streamlit account, and deploy from there.
+1. Create an account on [Streamlit Cloud](https://share.streamlit.io/).
+2. Log in to your Streamlit Cloud account
+3. Click "New app"
+4. Select your GitHub account and the repository you created
+5. Choose the main file (`app.py`)
+6. Click "Deploy"
 
-## Features
 
 ## Contributing
 
-#
+Any contribution, comment on features to add, critique on the current implementation, basically any feedback is very much appreciated :grin:
+
