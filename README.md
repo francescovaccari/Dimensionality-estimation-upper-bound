@@ -107,10 +107,15 @@ git push origin
 ### Deployment :rocket:
 
 **1.** Create an account on [Streamlit Cloud](https://share.streamlit.io/).
+
 **2.** Log in to your Streamlit Cloud account
+
 **3.** Click "New app"
+
 **4.** Select your GitHub account and the repository you created
+
 **5.** Choose the main file (`app.py`)
+
 **6.** Click "Deploy"
 
 
