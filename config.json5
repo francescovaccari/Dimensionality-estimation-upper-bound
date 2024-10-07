@@ -1,0 +1,113 @@
+{
+  // Page Configuration
+  page_config: {
+    page_title: "Data Explorer",
+    page_icon: ":eyeglasses:",
+    layout: "wide",
+  },
+
+  // Main Application Title
+  title: "Explore simulated data from [paper title]",
+
+  // Application Description
+  description: "This application allows you to explore the simulated data from our paper. Use the filters to select specific subsets of the data and view the results.",
+
+  // Dataset source
+  // Either local path (relative to the app's root directory) or URL for external source
+  data_source: {
+      path: "data/Final_table.csv",
+      url: "",
+    },
+
+  // Data Filters Configuration
+  filters: {
+    // Single-valued filters (displayed as dropdown selectors)
+    single_valued: [
+      {
+        name: "Generative_process",
+        label: "Generative Process",
+      },
+      {
+        name: "Noise_distribution",
+        label: "Noise Distribution",
+      },
+      {
+        name: "Final_normalization",
+        label: "Final Normalization",
+      },
+    ],
+    
+    // Range filters with discrete values (displayed as two horizontal dropdown selectors)
+    range_discrete: [
+      {
+        name: "Time_Series_Length",
+        label: "Time Series Length",
+      },
+      {
+        name: "Synthetic_Neurons",
+        label: "Synthetic Neurons",
+      },
+    ],
+    
+    // Range filters with continuous values (displayed as a slider)
+    range_continuous: [
+      {
+        name: "Tau",
+        label: "Tau",
+      },
+    ],
+  },
+
+  // Results Display Configuration
+  results: {
+    // Optional prefixes for result columns
+    prefix_options: ["PA", "CV", "K1", "PR", "80%", "90%"],
+    
+    // Columns to display in the results table
+    columns: [
+      {
+        name: "Identifiable_Dimensions",
+        label: "Identifiable Dimensions",
+      },
+      {
+        name: "Real_data_in_denoised_matrix",
+        label: "Real Data in Denoised Matrix",
+      },
+      {
+        name: "Estimated_noise_err",
+        label: "Estimated Noise Error",
+      },
+    ],
+  },
+
+  // Plots Configuration
+  plots: {
+    // Column name for the x-axis (shared across all subplots)
+    x_axis: {
+      name: "Tau",
+      label: "Tau",
+    },
+    
+    // List of column names for y-axes 
+    y_axes: [
+      {
+        name: "Identifiable_Dimensions",
+        label: "Identifiable Dimensions",
+      },
+      {
+        name: "Real_data_in_denoised_matrix",
+        label: "Real Data in Denoised Matrix",
+      },
+      {
+        name: "Estimated_noise_err",
+        label: "Estimated Noise Error",
+      },
+    ],
+    
+    // Column name for the color scale of the markers
+    color_variable: {
+      name: "Noise",
+      label: "Noise",
+    },
+  },
+}
