@@ -14,12 +14,12 @@ st.write(config['description'])
 st.subheader("Filter the data" ,divider=True)
 
 # Load data, either from url or from a path
-if config['data_url']:
-    conn = load_data_from_url(config['data_url'])
+if config['data_source']['url']:
+    conn = load_data_from_url(config['data_source']['url'])
     st.write("Data from configured URL:")
     st.write(conn)
 else:
-    conn = load_data_to_sqlite(config['path_to_data'])
+    conn = load_data_to_sqlite(config['data_source']['path'])
 
 # Create filter widgets
 selected_filters = create_filter_widgets(conn, config['filters'])

@@ -84,22 +84,24 @@ def create_filter_widgets(conn: Connection, filter_config: Dict) -> Dict:
     """
     selected_values = {}
     for filter_type, filters in filter_config.items():
-        for filter_name, filter_details in filters.items():
+        for filter_details in filters:
+            filter_name = filter_details['name']
+            filter_label = filter_details['label']
+            options = sorted(get_unique_values(conn, filter_name))
+            
             if filter_type == 'single_valued':
-                options = get_unique_values(conn, filter_name)
-                selected_values[filter_name] = st.selectbox(filter_details['label'], options)
-            elif filter_type in ['range_discrete', 'range_continuous']:
-                options = sorted(get_unique_values(conn, filter_name))
-                if filter_type == 'range_discrete':
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        selected_values[f"{filter_name}_min"] = st.selectbox(f"Min {filter_details['label']}", options)
-                    with col2:
-                        selected_values[f"{filter_name}_max"] = st.selectbox(f"Max {filter_details['label']}", options)
-                else:
-                    selected_values[f"{filter_name}_min"], selected_values[f"{filter_name}_max"] = st.select_slider(
-                        filter_details['label'], options=options, value=(options[0], options[-1])
-                    )
+                selected_values[filter_name] = st.selectbox(filter_label, options)
+            elif filter_type == 'range_discrete':
+                col1, col2 = st.columns(2)
+                with col1:
+                    selected_values[f"{filter_name}_min"] = st.selectbox(f"Min {filter_label}", options)
+                with col2:
+                    selected_values[f"{filter_name}_max"] = st.selectbox(f"Max {filter_label}", options)
+            elif filter_type == 'range_continuous':
+                selected_values[f"{filter_name}_min"], selected_values[f"{filter_name}_max"] = st.select_slider(
+                    filter_label, options=options, value=(options[0], options[-1])
+                )
+    
     return selected_values
 
 def build_query(filters: Dict, selected_filters: Dict) -> Tuple[str, List]:
@@ -113,18 +115,23 @@ def build_query(filters: Dict, selected_filters: Dict) -> Tuple[str, List]:
     conditions = []
     params = []
     
-    for filter_type, filter_dict in filters.items():
-        for column in filter_dict:
+    for filter_type, filter_list in filters.items():
+        for filter_details in filter_list:
+            column = filter_details['name']
             if filter_type == 'single_valued':
-                conditions.append(f"{column} = ?")
-                params.append(selected_filters[column])
-            elif filter_type in ['range_discrete', 'range_continuous']:
-                if selected_filters[f"{column}_min"] == selected_filters[f"{column}_max"]:
+                if column in selected_filters:
                     conditions.append(f"{column} = ?")
-                    params.extend([selected_filters[f"{column}_min"]])
-                else:  
-                    conditions.append(f"{column} BETWEEN ? AND ?")                                      
-                    params.extend([selected_filters[f"{column}_min"], selected_filters[f"{column}_max"]])
+                    params.append(selected_filters[column])
+            elif filter_type in ['range_discrete', 'range_continuous']:
+                min_value = selected_filters.get(f"{column}_min")
+                max_value = selected_filters.get(f"{column}_max")
+                if min_value is not None and max_value is not None:
+                    if min_value == max_value:
+                        conditions.append(f"{column} = ?")
+                        params.append(min_value)
+                    else:
+                        conditions.append(f"{column} BETWEEN ? AND ?")
+                        params.extend([min_value, max_value])
     
     query = f"SELECT * FROM data WHERE {' AND '.join(conditions)}"
     return query, params
@@ -140,23 +147,23 @@ def display_filters_summary(filter_config: Dict, selected_filters: Dict) -> None
     
     parameters = []
     values = []
-    for filter_type, filters in filter_config.items():
-        for filter_name, _ in filters.items():
+    for filter_type, filter_list in filter_config.items():
+        for filter_details in filter_list:
             if filter_type == 'single_valued':
                 parameters.extend([
-                    f"{filter_name.replace('_', ' ')}",
+                    f"{filter_details['name'].replace('_', ' ')}",
                 ])
                 values.extend({
-                    f"{selected_filters[filter_name]}",
+                    f"{selected_filters[filter_details['name']]}",
                 })
             elif filter_type in ['range_discrete', 'range_continuous']:
                 parameters.extend([
-                    f"{filter_name.replace('_', ' ')} min",
-                    f"{filter_name.replace('_', ' ')} max",
+                    f"{filter_details['label']} min",
+                    f"{filter_details['label']} max",
                 ])
                 values.extend([
-                    selected_filters[f"{filter_name}_min"],
-                    selected_filters[f"{filter_name}_max"]
+                    selected_filters[f"{filter_details['name']}_min"],
+                    selected_filters[f"{filter_details['name']}_max"]
                 ])
 
     st.table(pd.DataFrame.from_dict({
@@ -197,21 +204,21 @@ def create_subplots(data: pd.DataFrame, plot_config: Dict, prefix: str) -> go.Fi
     :return: Plotly Figure object
     """
     fig = make_subplots(rows=len(plot_config['y_axes']), cols=1, 
-                        subplot_titles=[y.replace('_', ' ') for y in plot_config['y_axes']])
+                        subplot_titles=[y['label'] for y in plot_config['y_axes']])
     
     for i, y_variable in enumerate(plot_config['y_axes'], start=1):
         scatter = go.Scatter(
-            x=data[plot_config['x_axis']],
-            y=data[prefix+y_variable],
+            x=data[plot_config['x_axis']['name']],
+            y=data[prefix+y_variable['name']],
             mode='markers',
-            name=y_variable,
+            name=y_variable['label'],
             showlegend=False,
             marker=dict(
-                color=data[plot_config['color_variable']],
+                color=data[plot_config['color_variable']['name']],
                 colorscale='Bluered',
                 showscale=True if i == len(plot_config['y_axes']) else False,
                 colorbar=dict(
-                    title=plot_config['color_variable'],
+                    title=plot_config['color_variable']['label'],
                     len=0.5,
                     thickness=15,
                     x=1.02,
@@ -223,8 +230,8 @@ def create_subplots(data: pd.DataFrame, plot_config: Dict, prefix: str) -> go.Fi
         
         fig.add_trace(scatter, row=i, col=1)
         
-        fig.update_xaxes(title_text=plot_config['x_axis'].replace('_', ' '), row=i, col=1)
-        fig.update_yaxes(title_text=y_variable.replace('_', ' '), row=i, col=1)
+        fig.update_xaxes(title_text=plot_config['x_axis']['label'], row=i, col=1)
+        fig.update_yaxes(title_text=y_variable['label'], row=i, col=1)
     
     fig.update_layout(height=300 * len(plot_config['y_axes']), width=1500)
     return fig
