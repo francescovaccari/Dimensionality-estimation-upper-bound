@@ -15,7 +15,7 @@
   // Dataset source
   // Either local path (relative to the app's root directory) or URL for external source
   data_source: {
-      path: "data/Final_table.csv",
+      path: "data/Data_table.csv",
       url: "",
     },
 
