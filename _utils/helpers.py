@@ -74,6 +74,9 @@ def get_unique_values(conn: Connection, column: str) -> List:
     query = f"SELECT DISTINCT {column} FROM data"
     return [row[0] for row in conn.execute(query).fetchall()]
 
+def round_value(value):
+    return round(value,2)
+
 def create_filter_widgets(conn: Connection, filter_config: Dict) -> Dict:
     """
     Dynamically create filter widgets based on the filter configuration.
@@ -99,7 +102,7 @@ def create_filter_widgets(conn: Connection, filter_config: Dict) -> Dict:
                     selected_values[f"{filter_name}_max"] = st.selectbox(f"Max {filter_label}", options)
             elif filter_type == 'range_continuous':
                 selected_values[f"{filter_name}_min"], selected_values[f"{filter_name}_max"] = st.select_slider(
-                    filter_label, options=options, value=(options[0], options[-1])
+                    filter_label, options=options, value=(options[0], options[-1], format_func=round_value)
                 )
     
     return selected_values
