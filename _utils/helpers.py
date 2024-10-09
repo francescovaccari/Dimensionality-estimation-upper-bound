@@ -74,8 +74,6 @@ def get_unique_values(conn: Connection, column: str) -> List:
     query = f"SELECT DISTINCT {column} FROM data"
     return [row[0] for row in conn.execute(query).fetchall()]
 
-def round_value(value):
-    return round(value,2)
 
 def create_filter_widgets(conn: Connection, filter_config: Dict) -> Dict:
     """
@@ -93,17 +91,17 @@ def create_filter_widgets(conn: Connection, filter_config: Dict) -> Dict:
             options = sorted(get_unique_values(conn, filter_name))
             
             if filter_type == 'single_valued':
-                selected_values[filter_name] = st.selectbox(filter_label, options)
+                selected_values[filter_name] = st.selectbox(filter_label, options, format_func=lambda x: f"{x:.2f}" if isinstance(x, float) else x)
             elif filter_type == 'range_discrete':
                 col1, col2 = st.columns(2)
                 with col1:
-                    selected_values[f"{filter_name}_min"] = st.selectbox(f"Min {filter_label}", options)
+                    selected_values[f"{filter_name}_min"] = st.selectbox(f"Min {filter_label}", options, format_func=lambda x: f"{x:.2f}" if isinstance(x, float) else x)
                 with col2:
-                    selected_values[f"{filter_name}_max"] = st.selectbox(f"Max {filter_label}", options)
+                    selected_values[f"{filter_name}_max"] = st.selectbox(f"Max {filter_label}", options, format_func=lambda x: f"{x:.2f}" if isinstance(x, float) else x)
             elif filter_type == 'range_continuous':
                 selected_values[f"{filter_name}_min"], selected_values[f"{filter_name}_max"] = st.select_slider(
-                    filter_label, options=options, value=(options[0], options[-1], format_func=round_value)
-                )
+                    filter_label, options=options, value=(options[0], options[-1]), format_func=lambda x: f"{x:.2f}",
+                    )
     
     return selected_values
 
@@ -154,10 +152,13 @@ def display_filters_summary(filter_config: Dict, selected_filters: Dict) -> None
         for filter_details in filter_list:
             if filter_type == 'single_valued':
                 parameters.extend([
-                    f"{filter_details['name'].replace('_', ' ')}",
+                    f"{filter_details['label']}",
                 ])
+                value = selected_filters[filter_details['name']]
+                if isinstance(value, float):
+                    value = f"{selected_filters[filter_details['name']]:.2f}"
                 values.extend({
-                    f"{selected_filters[filter_details['name']]}",
+                    value
                 })
             elif filter_type in ['range_discrete', 'range_continuous']:
                 parameters.extend([
@@ -165,8 +166,8 @@ def display_filters_summary(filter_config: Dict, selected_filters: Dict) -> None
                     f"{filter_details['label']} max",
                 ])
                 values.extend([
-                    selected_filters[f"{filter_details['name']}_min"],
-                    selected_filters[f"{filter_details['name']}_max"]
+                    f"{selected_filters[filter_details['name'] + "_min"]:.2f}",
+                    f"{selected_filters[filter_details['name'] + "_max"]:.2f}"
                 ])
 
     st.table(pd.DataFrame.from_dict({
