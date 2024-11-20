@@ -1,141 +1,33 @@
-# Explore-our-data-app
+# Dimensionality Estimation Upper Bound Streamlit App
 
-Just a minimal csv explorer app, built and hosted on [Streamlit](https://docs.streamlit.io/). It allows custom filtering and plotting of tabular data, in the most common formats (csv, tsv, xlsl).
-To specify which columns represent data filters, results and plots variables, a JSON file is provided in the repo (check the [template](config.json5)).
+This repository hosts a Streamlit application designed to help estimate the number of significant components in high-dimensional data. 
+The app filters simulations obtained from the paper (Vaccari et al., [paper here]) based on user-defined settings and visualizes the results, providing simple statistics to guide dimensionality estimation.
 
-**What's the use of this app?**
-If you're looking for a way to show your data in a free, simple and effective interface: that's the case. 
+Upon usage, please cite:
+> FE Vaccari, S Diomedi, E Bettazzi, M Filippini, M De Vitis, K Hadjidimitrakis, P Fattori<br>
+> **More or fewer latent variables in the high-dimensional data space? That is the question**<br>
+> *Journal yyyy*, [link here]<br>
+> (arXiv link: [link here])
 
-**A case use from open-research**
-[Vaccari et al. 2024](PreprintLink) computed simulations of neural data based on multiple combinations of parameters (like the number of neurons, length of recordings, etc), then used different methods to estimate the least number of dimensions representing the signal.
-Since the process can be computationally intensive and time-consuming, they released the simulated data for everyone to use (and save some energy :seedling:), and provided a [link](SimulationsDataExplorer) to their own version of this app, so that readers could filter the data and explore specific results.
+## Rationale Behind the Analysis
 
-## Install, customize and deploy
+Properly estimating the number of dimensions (or components) in data is crucial for proper data interpretation and subsequent analysis. In contexts like neural data, where the underlying structure is complex and involves many latent variables, failing to determine the correct dimensionality can lead to misleading conclusions, such as mistaking noise for meaningful signal.
 
-The process from installation to deployment is quite straightforward: 
+To address this challenge, we designed a subset of simulations with a complex underlying structure, including a large number of latent variables. These simulations explore scenarios where not all latent variables are detectable, allowing us to estimate upper bounds for identifiable dimensionality. The key insight behind this analysis is that, given a known decreasing curve in the explained variance of the principal components (PCs), and a data matrix with specific dimensions, one cannot reliably estimate an arbitrarily large number of significant components. This method helps define the upper limits of dimensionality estimation, especially in high-dimensional data depending on matrix properties and criterion used.
 
-*Install:* fork this repo to your own github account and clone the forked repo to your local machine;
+## How to Use the App
 
-*Customize:* specify a local (internal to the repo) or remote data source and customize the config file; 
+The app allows users to filter simulations based on specific criteria (e.g., matrix size, normalization procedure, criterion used for dimensionality estimation etc.) and visualize the results.
+The application provides an interactive interface to help users understand and analyze dimensionality estimation in different settings.
 
-*Deploy:* create an account on Streamlit, connect your forker repo and deploy. 
-
-For a bit more detailed guide:
-
-### Installation :gear:
-
-**1.** Fork this repository directly on [Github](https://github.com/):
-
-A fork is like your own copy of the project. 
-In case you are not familiar with the process of forking:
-
-1. *Click the "Fork" Button*: At the top right of this page, you’ll see a button that says Fork. Click it.
-
-2. *Choose Your Account*: GitHub will ask where you want to fork the project. Select your GitHub account.
-    
-3. *Wait for the Fork to Complete*: After a few moments, you’ll have your own copy of this project under your GitHub account!
+**Note:**
+- Some parameters allow the user to select a range (e.g. [50, 100] observed variables or neurons). Setting the minimum and maximum values to the same number will select only that specific value for that parameter.
+- For neural data, the recommended settings are:
+  - **Generative Process**: 'PCs'
+  - **Noise Distribution**: 'Gaussian'
+- The parameter tau can be estimated using the `fit_tau.m` function available in the MATLAB package provided at: [https://github.com/francescovaccari/Dimensionality-estimation](https://github.com/francescovaccari/Dimensionality-estimation)
+- According to the results presented in our paper, **PA/CV** emerged as the most consistent methods. **CV** can sometimes yield highly variable results whereas **PA** can be too conservative in some cases.
 
 
-**2.** Clone the forked repository and navigate to root:
-
-```bash
-git clone https://github.com/[YourUsername]/[forked-repo].git
-cd forked-repo
-```
-
-**In case you want to check you app locally (after the customization step):**
-
-**3.** Create a virtual environment, activate it and install the requirements, with conda:
-```bash
-conda create -n streamlit-app python
-conda activate streamlit-app
-pip install -r requirements
-```
-or with python:
-```bash
-python -m path/to/venv 
-source <path/to/venv>/bin/activate
-pip install -r requirements
-```
-
-**4.** Run streamlit locally (it will open the app on a browser window):
-```bash
-cd forked-repo
-streamlit run app.py
-```
-
-### Customization :pencil:
-
-**1.** Put your own data in the `/data` folder, or just get the data from an external source. 
-Specify the data source accordingly:
-
-```json5
-data_source: {
-      path: "data/your_data.csv",
-      url: "",
-    }
-```
-Supported formats: csv, tsv, xlxs. File size is limited to 50 MB by Github, and to 200 MB by Streamlit.
-
-**2.** Fill the [config file](config.json5), i.e. specify the names (and site labels) of the columns that should be used as filters, results and plot variables. For example:
-
-```json5
-// Data Filters Configuration
-filters: {
-// Single-valued filters (displayed as dropdown selectors)
-single_valued: [
-    {
-    name: "column_name",
-    label: "variable name",
-    },
-
-    // Add more filters
-],
-
-// Range filters with discrete values (displayed as two horizontal dropdown selectors)
-range_discrete: [
-    {
-    name: "column_name",
-    label: "variable name",
-    },
-
-    // Add more filters
-],
-
-// Range filters with continuous values (displayed as a slider)
-range_continuous: [
-    {
-    name: "column_name",
-    label: "variable name",
-    },
-],
-}
-```
-
-**3.** Push the modifications to the forked repository.
-```bash
-cd forked-repo
-git add .
-git commit -m "Added data source; customized config file"
-git push origin
-```
-
-### Deployment :rocket:
-
-**1.** Create an account on [Streamlit Cloud](https://share.streamlit.io/).
-
-**2.** Log in to your Streamlit Cloud account
-
-**3.** Click "New app"
-
-**4.** Select your GitHub account and the repository you created
-
-**5.** Choose the main file (`app.py`)
-
-**6.** Click "Deploy"
-
-
-## Contributing
-
-Any contribution, comment on features to add, critique on the current implementation, basically any feedback is very much appreciated :grin:
-
+## Support
+Email francesco.vaccari6@unibo.it with any questions.
