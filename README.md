@@ -19,6 +19,7 @@ To address this challenge, we designed a subset of simulations with a complex un
 
 The app allows users to filter simulations based on specific criteria (e.g., matrix size, normalization procedure, criterion used for dimensionality estimation etc.) and visualize the results.
 The application provides an interactive interface to help users understand and analyze dimensionality estimation in different settings.
+Click on  [https://dimensionality-estimation-upper-bound.streamlit.app](https://dimensionality-estimation-upper-bound.streamlit.app) to be redirect to the Streamlit App.
 
 **Note:**
 - Some parameters allow the user to select a range (e.g. [50, 100] observed variables or neurons). Setting the minimum and maximum values to the same number will select only that specific value for that parameter.
