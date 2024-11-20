@@ -16,7 +16,7 @@
   "For neural data, the recommended settings are: Generative Process: 'PCs'; Noise Distribution: 'Gaussian';",
   "The parameter tau can be estimated using the fit_tau.m function available in the MATLAB package provided at: https://github.com/francescovaccari/Dimensionality-estimation",
   "According to the results presented in our paper, PA/CV emerged as the most consistent methods. CV can sometimes yield highly variable results whereas PA can be too conservative in some cases."
-  ]
+  ],
 
   // Dataset source
   // Either local path (relative to the app's root directory) or URL for external source
