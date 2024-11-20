@@ -10,7 +10,13 @@
   title: "Dimensionality Estimation Upper Bound App",
 
   // Application Description
-  description: "The app allows users to filter simulations based on specific criteria (e.g., matrix size, normalization procedure, criterion used for dimensionality estimation etc.) and visualize the results. The application provides an interactive interface to help users understand and analyze dimensionality estimation in different settings. 
+ "description": "The app allows users to filter simulations based on specific criteria (e.g., matrix size, normalization procedure, criterion used for dimensionality estimation etc.) and visualize the results. The application provides an interactive interface to help users understand and analyze dimensionality estimation in different settings.",
+  "note": [
+    "Some parameters allow the user to select a range (e.g., [50, 100] observed variables or neurons). Setting the minimum and maximum values to the same number will select only that specific value for that parameter.",
+    "For neural data, the recommended settings are: Generative Process: 'PCs'; Noise Distribution: 'Gaussian';",
+    "The parameter tau can be estimated using the fit_tau.m function available in the MATLAB package provided at: https://github.com/francescovaccari/Dimensionality-estimation",
+    "According to the results presented in our paper, PA/CV emerged as the most consistent methods. CV can sometimes yield highly variable results whereas PA can be too conservative in some cases."
+  ]
 
 Note:
 - Some parameters allow the user to select a range (e.g. [50, 100] observed variables or neurons). Setting the minimum and maximum values to the same number will select only that specific value for that parameter.
