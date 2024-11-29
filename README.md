@@ -1,13 +1,13 @@
 # Dimensionality Estimation Upper Bound Streamlit App
 
 This repository hosts a Streamlit application designed to help estimate the number of significant components in high-dimensional data. 
-The app filters simulations obtained from the paper (Vaccari et al., [paper here]) based on user-defined settings and visualizes the results, providing simple statistics to guide dimensionality estimation.
+The app filters simulations obtained from the paper (Vaccari et al., 2024 - bioarxiv) based on user-defined settings and visualizes the results, providing simple statistics to guide dimensionality estimation.
 
 Upon usage, please cite:
 > FE Vaccari, S Diomedi, E Bettazzi, M Filippini, M De Vitis, K Hadjidimitrakis, P Fattori<br>
-> **More or fewer latent variables in the high-dimensional data space? That is the question**<br>
-> *Journal yyyy*, [link here]<br>
-> (arXiv link: [link here])
+> **More or less latent variables  in the high-dimensional data space? That is the question**<br>
+> bioRxiv 2024.11.28.625854
+> (doi: https://doi.org/10.1101/2024.11.28.625854)
 
 ## Rationale Behind the Analysis
 
