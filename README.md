@@ -108,6 +108,7 @@ Synthetic datasets (i.e. data matrices) of size **\[T, M\]** are generated, wher
 
   -   Set **times_series_length**, **fake_units** and a **tau** range that match your own data
   -   **num_latent**: *1000*
+  -   **Method**: *OPTIMAL_knowing_struct*
 
 ------------------------------------------------------------------------
 
