@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 from pathlib import Path
-from ._utils.helpers import (
+from _utils.helpers import (
     load_data_to_sqlite,
     extract_metadata_from_data,
     create_simulation_filter_widgets,
